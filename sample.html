@@ -8,9 +8,12 @@
         <li>6am</li>
         <li>7:30 (PST)</li>
         <li>16h45 (Paris time)</li>
+        <li>12:45 (Madrid time)</li>
+        <li>12:45 (California)</li>
         <li>48:33am</li>
         <li>00:00 (UTC)</li>
         <li>1:3 (UTC+5)</li>
+        <li>1:3 (made up shit)</li>
     </ul>
     <textarea rows="4" cols="50">
     </textarea>
@@ -18,7 +21,9 @@
     <input type='text'>
     <br />
     <button id="#the_button" onclick="convertTime(window.event);">Convert!</button>
-    <script src='https://code.jquery.com/jquery-1.11.3.min.js'></script>
+    <button id="#the_button" onclick="getTheTime(window.event);">Get The Time</button>
+    <script src="moment.js"></script>
+    <script src="moment-timezone.min.js"></script>
     <script src="timeonthefly.js"></script>
 </body>
 </html>

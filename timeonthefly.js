@@ -10,8 +10,57 @@ function convertTime(e) {
     
     if(text = getSelectionText());
     var time = parseTime(text);
+    alert( createTime(time['time'], convertZoneToUTC(time['zone'])) );
     alert(time['time']+" "+convertZoneToUTC(time['zone']));
     removeSelections();
+}
+
+function createTime(time, zone) {
+    var timeHr = time.substr(0, time.indexOf(":"));
+    var timeMin = time.substr(time.indexOf(":") + 1, time.legth);
+    var now = moment();
+    if(typeof(zone) != undefined && zone != null && zone && zone.indexOf("UTC") > -1) {
+        // Okay, looks like we have a UTC zone    
+        offset = convertUtcToOffset(zone);
+        now.utcOffset(offset);
+        now.hours(parseInt(timeHr));
+        now.minutes(parseInt(timeMin)); 
+        now.seconds(0);
+    } else {
+        now.tz(zone);
+        now.hours(parseInt(timeHr));
+        now.minutes(parseInt(timeMin));
+        now.seconds(0);
+    }
+    return now;
+}
+
+function convertUtcToOffset(zone) {
+    var offset = 0;
+    zone = zone.replace("UTC", "");
+    if(zone.indexOf(" ") > -1) {
+       zone = zone.replace(/ /g, "");
+    }
+    var plus_minus = zone.substr(0, 1);
+    if(zone.indexOf("+") > -1) {
+       zone = zone.replace("+", "");
+    }
+    if(zone.indexOf("-") > -1) {
+       zone = zone.replace("-", "");
+    }
+    var zoneHr = 0;
+    var zoneMin = 0;
+    if(zone.indexOf(":")>-1){ 
+        zoneHr = zone.substr(0, zone.indexOf(":"));
+        zoneMin = zone.substr(zone.indexOf(":")+1, zone.legth);
+        offset = parseInt(zoneHr) * 60 + parseInt(zoneMin);
+    } else {
+        offset = parseInt(zone) * 60;
+    }
+    if(plus_minus == '-') {
+        offset = parseInt(offset) * -1;
+    }
+    return offset;
 }
 
 function getSelectionText() {
@@ -80,7 +129,9 @@ function parseTime(timeString) {
     var validTime = true;
     
     //Get rid of whitespace and make lower case
-    timeString = timeString.replace(/ /g,'');
+    if(timeString.indexOf(" ") > -1) {
+        timeString = timeString.replace(/ /g,'');
+    }
     timeString = timeString.toLowerCase();
     endOfTime = 0;
     
@@ -154,6 +205,8 @@ function parseTime(timeString) {
     }    
 }
 
+//Will replace known timezones to UTC, eg UTC+1... if the input is unknown it will be left alone
+//certain other strings will be converted to the moment.js timezone string
 function convertZoneToUTC(zoneString) {
     if(typeof(zoneString) != undefined) {
         zoneString = zoneString.toUpperCase();
@@ -168,6 +221,11 @@ function convertZoneToUTC(zoneString) {
     }
 }
 
+function getTheTime(e) {
+    e.preventDefault();
+    var now = moment();
+    alert(now);
+}
 
 //Known Timezones
 var zoneCode = Array();
