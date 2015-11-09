@@ -5,13 +5,12 @@
     */
 
 
-function convertTime(e) {
-    e.preventDefault();
-    
+function convertTime() {
     if(text = getSelectionText());
     var time = parseTime(text);
-    alert( createTime(time['time'], convertZoneToUTC(time['zone'])) );
     alert(time['time']+" "+convertZoneToUTC(time['zone']));
+    alert(createTime(time['time'], convertZoneToUTC(time['zone'])) );
+    alert( convertToZone( createTime(time['time'], convertZoneToUTC(time['zone'])), "Europe/Paris") );
     removeSelections();
 }
 
@@ -33,6 +32,12 @@ function createTime(time, zone) {
         now.seconds(0);
     }
     return now;
+}
+
+//takes a moment called time and converts it to a given zone
+function convertToZone(time, zone) {
+    var converted = time.clone().tz(zone);
+    return converted;
 }
 
 function convertUtcToOffset(zone) {
@@ -221,11 +226,6 @@ function convertZoneToUTC(zoneString) {
     }
 }
 
-function getTheTime(e) {
-    e.preventDefault();
-    var now = moment();
-    alert(now);
-}
 
 //Known Timezones
 var zoneCode = Array();
