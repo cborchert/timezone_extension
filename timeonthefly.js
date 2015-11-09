@@ -8,37 +8,116 @@
 function convertTime() {
     if(text = getSelectionText());
     var time = parseTime(text);
-    alert(time['time']+" "+convertZoneToUTC(time['zone']));
-    alert(createTime(time['time'], convertZoneToUTC(time['zone'])) );
-    alert( convertToZone( createTime(time['time'], convertZoneToUTC(time['zone'])), "Europe/Paris") );
+    var interpretedTime = createTime(time['time'], convertZoneToUTC(time['zone']));
+    var convertedTime = convertToZone( createTime(time['time'], convertZoneToUTC(time['zone'])), "Europe/Paris");
+    var timeString = stringTime(convertedTime);
+    if(timeString.length > 0) {
+        appendValue( " ("+stringTime(convertedTime)+") " );
+    }
     removeSelections();
 }
 
 function createTime(time, zone) {
-    var timeHr = time.substr(0, time.indexOf(":"));
-    var timeMin = time.substr(time.indexOf(":") + 1, time.legth);
-    var now = moment();
-    if(typeof(zone) != undefined && zone != null && zone && zone.indexOf("UTC") > -1) {
-        // Okay, looks like we have a UTC zone    
-        offset = convertUtcToOffset(zone);
-        now.utcOffset(offset);
-        now.hours(parseInt(timeHr));
-        now.minutes(parseInt(timeMin)); 
-        now.seconds(0);
+    if(time && time != undefined) {
+        var timeHr = time.substr(0, time.indexOf(":"));
+        var timeMin = time.substr(time.indexOf(":") + 1, time.legth);
+        var now = moment();
+        if(typeof(zone) != undefined && zone != null && zone && zone.indexOf("UTC") > -1) {
+            // Okay, looks like we have a UTC zone    
+            offset = convertUtcToOffset(zone);
+            now.utcOffset(offset);
+            now.hours(parseInt(timeHr));
+            now.minutes(parseInt(timeMin)); 
+            now.seconds(0);
+        } else {
+            now.tz(zone);
+            now.hours(parseInt(timeHr));
+            now.minutes(parseInt(timeMin));
+            now.seconds(0);
+        }
+        return now;
     } else {
-        now.tz(zone);
-        now.hours(parseInt(timeHr));
-        now.minutes(parseInt(timeMin));
-        now.seconds(0);
+        return false;
     }
-    return now;
 }
 
 //takes a moment called time and converts it to a given zone
 function convertToZone(time, zone) {
-    var converted = time.clone().tz(zone);
-    return converted;
+    if(time && time != undefined) {
+        var converted = time.clone().tz(zone);
+        return converted;
+    } else {
+        return false;
+    }
 }
+
+function stringTime(time) {
+    if(typeof(time.format)== 'function') {
+        return (time.format('h:mma [UTC]Z[/]z'));
+    } else {
+        return ("");
+    }
+    
+}
+
+function appendValue(html) {
+    var selectInserted = true;
+    if (typeof window.getSelection != "undefined") {
+        // IE 9 and other non-IE browsers
+        sel = window.getSelection();
+        text = sel.toString() + html;
+        // Test that the Selection object contains at least one Range
+        if (sel.getRangeAt && sel.rangeCount) {
+            // Get the first Range (only Firefox supports more than one)
+            range = window.getSelection().getRangeAt(0);
+            range.deleteContents();
+
+            // Create a DocumentFragment to insert and populate it with HTML
+            // Need to test for the existence of range.createContextualFragment
+            // because it's non-standard and IE 9 does not support it
+            if (range.createContextualFragment) {
+                fragment = range.createContextualFragment(text);
+            } else {
+                // In IE 9 we need to use innerHTML of a temporary element
+                var div = document.createElement("div"), child;
+                div.innerHTML = text;
+                fragment = document.createDocumentFragment();
+                while ( (child = div.firstChild) ) {
+                    fragment.appendChild(child);
+                }
+            }
+            var firstInsertedNode = fragment.firstChild;
+            var lastInsertedNode = fragment.lastChild;
+            range.insertNode(fragment);
+            if (selectInserted) {
+                if (firstInsertedNode) {
+                    range.setStartBefore(firstInsertedNode);
+                    range.setEndAfter(lastInsertedNode);
+                }
+                sel.removeAllRanges();
+                sel.addRange(range);
+            }
+        }
+    } else if (document.selection && document.selection.type != "Control") {
+        // IE 8 and below
+        range = document.selection.createRange();
+        range.pasteHTML(html);
+    }
+    
+    var textareas = document.getElementsByTagName('textarea');
+    var inputs =  document.getElementsByTagName('input');
+    var allAreas = Array.prototype.slice.call(textareas).concat(Array.prototype.slice.call(inputs));
+
+    allAreas.forEach(function(e, i, a){
+            if (e.selectionStart != undefined && e.selectionStart != e.selectionEnd) {
+                var startPos = e.selectionStart;
+                var endPos = e.selectionEnd;
+                var text = e.value.substring(startPos, endPos); 
+                e.value = e.value.substr(0, endPos) + html + e.value.substr(endPos, e.value.length)
+            }
+    });
+}
+
 
 function convertUtcToOffset(zone) {
     var offset = 0;
@@ -213,7 +292,7 @@ function parseTime(timeString) {
 //Will replace known timezones to UTC, eg UTC+1... if the input is unknown it will be left alone
 //certain other strings will be converted to the moment.js timezone string
 function convertZoneToUTC(zoneString) {
-    if(typeof(zoneString) != undefined) {
+    if(typeof(zoneString) != undefined && zoneString ) {
         zoneString = zoneString.toUpperCase();
         zoneString = zoneString.replace("TIME", "");
         zoneString = zoneString.replace(".", "");
