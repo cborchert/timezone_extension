@@ -12,7 +12,7 @@
       "19": "icons/19x19.png",
       "38": "icons/38x38.png"
     },
-    "default_title": "That's the tool tip",
+    "default_title": "Convert Time on the Fly",
     "default_popup": "browseraction/popup.html"
   },
 
@@ -21,16 +21,11 @@
     "persistent": false
   },
 
-  "chrome_url_overrides" : {
-    "newtab": "newtab/newtab.html"
-  },
-
   "content_scripts": [
     {
       "matches": ["http://*/*", "https://*/*"],
-      "js": ["content.js"]
+      "js": ["moment.js", "moment-timezone.min.js", "content.js"]
     }
-  ],
+  ]
 
-  "devtools_page": "devtools/devtools.html"
 }
